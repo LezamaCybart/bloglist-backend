@@ -6,3 +6,4 @@ test('dummy return one', () => {
   const result = list_helpers.dummy(blogs)
   expect(result).toBe(1)
 })
+
