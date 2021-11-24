@@ -38,7 +38,8 @@ test('a valid blog can be added', async() => {
   const newBlog = {
     title: 'AFFC',
     author: 'GRRM',
-    url: 'affc.com'
+    url: 'affc.com',
+    likes: 2
   }
 
   await api
@@ -54,6 +55,25 @@ test('a valid blog can be added', async() => {
   expect(titles).toContain(
     'AFFC'
   )
+})
+
+test('like property missing in request defaults to 0', async() => {
+  const newBlog = {
+    title: 'AFFC',
+    author: 'GRRM',
+    url: 'affc.com',
+  }
+
+  const postedBlog = await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(200)
+    .expect('Content-Type', /application\/json/)
+
+  const blogsAtEnd = await helper.blogsInDb()
+  expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length + 1)
+
+  expect(postedBlog.body.likes).toEqual(0)
 })
 
 afterAll(() => {
