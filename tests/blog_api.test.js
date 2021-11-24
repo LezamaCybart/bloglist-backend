@@ -76,6 +76,22 @@ test('like property missing in request defaults to 0', async() => {
   expect(postedBlog.body.likes).toEqual(0)
 })
 
+test('updating like count of post', async () => {
+  const blogsAtStart = await helper.blogsInDb()
+  const blogToUpdate = blogsAtStart[0]
+
+  const newBlog = {
+    likes: 4
+  }
+
+  const updatedBlog = await api
+    .put(`/api/blogs/${blogToUpdate.id}`)
+    .send(newBlog)
+    .expect(200)
+    .expect('Content-Type', /application\/json/)
+
+  expect(updatedBlog.body.likes).toEqual(newBlog.likes)
+})
 test('blog with no url is not added', async () => {
   const newBlog = {
     title: 'AFFC',
@@ -111,6 +127,7 @@ describe('deletion of a blog', () => {
     expect(titles).not.toContain(blogToDelete.title)
   })
 })
+
 afterAll(() => {
   mongoose.connection.close()
 })
