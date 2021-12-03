@@ -4,10 +4,17 @@ const helper = require('./test_helper')
 const app = require('../app')
 const api = supertest(app)
 const Blog = require('../models/blog')
+const User = require('../models/user')
+const bcrypt = require('bcrypt')
 
 beforeEach(async () => {
   //jest.useFakeTimers('legacy')
   await Blog.deleteMany({})
+  await User.deleteMany({})
+  const passwordHash = await bcrypt.hash('sekret', 10)
+  const user = new User({ username: 'root', passwordHash})
+
+  await user.save()
 
   for (let blog of helper.initialBlogs) {
     let blogObject = new Blog(blog)
@@ -42,8 +49,25 @@ test('a valid blog can be added', async() => {
     likes: 2
   }
 
+  let token = '';
+  const blogCreator = {
+    username: 'root',
+    password: 'sekret'
+  }
+
+  await api
+    .post('/api/login')
+    .send(blogCreator)
+    .expect(200)
+    .then(res => {
+      token = res.body.token
+      console.log(token)
+    })
+
+  console.log(token)
   await api
     .post('/api/blogs')
+    .set('Authorization',  'bearer ' + token)
     .send(newBlog)
     .expect(200)
     .expect('Content-Type', /application\/json/)
@@ -63,9 +87,24 @@ test('like property missing in request defaults to 0', async() => {
     author: 'GRRM',
     url: 'affc.com',
   }
+  let token = '';
+  const blogCreator = {
+    username: 'root',
+    password: 'sekret'
+  }
+
+  await api
+    .post('/api/login')
+    .send(blogCreator)
+    .expect(200)
+    .then(res => {
+      token = res.body.token
+      console.log(token)
+    })
 
   const postedBlog = await api
     .post('/api/blogs')
+    .set('Authorization',  'bearer ' + token)
     .send(newBlog)
     .expect(200)
     .expect('Content-Type', /application\/json/)
@@ -112,9 +151,24 @@ describe('deletion of a blog', () => {
   test('succeds with a status code 204 if id is valid', async () => {
     const blogsAtStart = await helper.blogsInDb()
     const blogToDelete = blogsAtStart[0]
+    let token = '';
+    const blogCreator = {
+      username: 'root',
+      password: 'sekret'
+    }
+
+    await api
+      .post('/api/login')
+      .send(blogCreator)
+      .expect(200)
+      .then(res => {
+        token = res.body.token
+        console.log(token)
+      })
 
     await api
       .delete(`/api/blogs/${blogToDelete.id}`)
+      .set('Authorization',  'bearer ' + token)
       .expect(204)
 
     const blogsAtEnd = await helper.blogsInDb()

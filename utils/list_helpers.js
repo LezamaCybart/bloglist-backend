@@ -1,3 +1,4 @@
+const _ = require('lodash')
 const dummy = (blogs) => {
   blogs //linter
   return 1
@@ -16,8 +17,22 @@ const favoriteBlog = (blogs) => {
   return favorite
 }
 
+const getMostProlificAuthor = (blogs) => {
+  const bookCount = _.countBy(blogs, 'author')
+  const buildAuthor = (authorObject) => {
+    return {
+      'author': authorObject['author'],
+      'books': bookCount[authorObject['author']]
+    }
+  }
+  const completeList = _.map(blogs, buildAuthor)
+  const sortedCount = _.orderBy(completeList, 'books', 'desc')
+
+  return sortedCount[0]
+}
 module.exports = {
   dummy,
   totalLikes,
-  favoriteBlog
+  favoriteBlog,
+  getMostProlificAuthor
 }
