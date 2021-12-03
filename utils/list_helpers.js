@@ -30,9 +30,23 @@ const getMostProlificAuthor = (blogs) => {
 
   return sortedCount[0]
 }
+
+const getMostLikedAuthor = (blogs) => {
+  const sumLikes = blogs => {
+    return {
+      'author': blogs[0]['author'],
+      'likes': _.sumBy(blogs, 'likes')
+    }
+  }
+  const groupList = _.groupBy(blogs, 'author')
+  const mapList = _.map(groupList, sumLikes)
+  const sortedList = _.orderBy(mapList, 'likes', 'desc')
+  return sortedList[0]
+}
 module.exports = {
   dummy,
   totalLikes,
   favoriteBlog,
-  getMostProlificAuthor
+  getMostProlificAuthor,
+  getMostLikedAuthor
 }
